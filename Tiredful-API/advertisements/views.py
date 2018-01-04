@@ -31,24 +31,36 @@ def index(request):
     """
     return render(request, 'advertisements/index.html', )
 
-
 @api_view(['GET', 'POST'])
-@permission_classes((IsAuthenticated,))
 def advts(request):
     """
     List of advts posted
     """
     if request.method == 'GET':
-        classifieds = Classified.objects.all()
-        serializer = ClassifiedSerializers(classifieds, many=True)
-        return Response(serializer.data)
+        return advts_get(request)
     elif request.method == 'POST':
-        serializer = ClassifiedSerializers(data=request.data)
-        serializer.initial_data['user'] = request.user.id
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return advts_post(request)
     else:
         return Response(
             serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+def advts_get(request):
+    """
+    List of advts posted
+    """
+    classifieds = Classified.objects.all()
+    serializer = ClassifiedSerializers(classifieds, many=True)
+    return Response(serializer.data, content_type='text/html')
+
+
+@permission_classes((IsAuthenticated,))
+def advts_post(request):
+    """
+    List of advts posted
+    """   
+    serializer = ClassifiedSerializers(data=request.data)
+    serializer.initial_data['user'] = request.user.id
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
